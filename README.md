@@ -22,7 +22,8 @@ where `<jobs_file>` is the path to the input text file containing the list of jo
 
 For example:
 
-> input/image1.png brightness output/image1_brightness.png 
+> input/image1.png brightness output/image1_brightness.png
+
 > input/image2.png grayscale output/image2_grayscale.png
 > input/image3.png blurring output/image3_blurred.png
 
@@ -50,4 +51,4 @@ Contributions to the project are welcome! If you find a bug or have an idea for 
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE]([LICENSE](https://mit-license.org/)) file for details.
