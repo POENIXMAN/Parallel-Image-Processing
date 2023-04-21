@@ -22,7 +22,7 @@ where `<jobs_file>` is the path to the input text file containing the list of jo
 
 For example:
 
-> input/image1.png brightness output/image1_brightness.png
+> input/image1.png brightness output/image1_brightness.png 
 > input/image2.png grayscale output/image2_grayscale.png
 > input/image3.png blurring output/image3_blurred.png
 
