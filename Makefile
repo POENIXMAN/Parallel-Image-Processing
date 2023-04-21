@@ -14,7 +14,7 @@ OUT_DIR = output_files
 EXEC = $(BIN_DIR)/batch_processing
 SRCS = $(wildcard $(SRC_DIR)/*.cu)
 INCS = $(wildcard $(INC_DIR)/*.h)
-OBJS = $(SRCS:$(SRC_DIR)/%.cu=$(OBJ_DIR)/%.o) $(OBJ_DIR)/file_parser.o
+OBJS = $(patsubst $(SRC_DIR)/%.cu,$(OBJ_DIR)/%.o,$(SRCS)) $(OBJ_DIR)/file_parser.o
 INPUT_FILES = $(wildcard $(IN_DIR)/*.png)
 OUTPUT_FILES = $(patsubst $(IN_DIR)/%.png,$(OUT_DIR)/%.png,$(INPUT_FILES))
 
