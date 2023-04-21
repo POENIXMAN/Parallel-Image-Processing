@@ -1,6 +1,6 @@
 # Compiler options
 CC = nvcc
-CFLAGS = -std=c++11 -O3 -arch=sm_30
+CFLAGS = -std=c++11 -O3 -arch=sm_30 -I$(INC_DIR)
 
 # Directories
 SRC_DIR = src
@@ -14,7 +14,7 @@ OUT_DIR = output_files
 EXEC = $(BIN_DIR)/batch_processing
 SRCS = $(wildcard $(SRC_DIR)/*.cu)
 INCS = $(wildcard $(INC_DIR)/*.h)
-OBJS = $(SRCS:$(SRC_DIR)/%.cu=$(OBJ_DIR)/%.o)
+OBJS = $(SRCS:$(SRC_DIR)/%.cu=$(OBJ_DIR)/%.o) $(OBJ_DIR)/file_parser.o
 INPUT_FILES = $(wildcard $(IN_DIR)/*.png)
 OUTPUT_FILES = $(patsubst $(IN_DIR)/%.png,$(OUT_DIR)/%.png,$(INPUT_FILES))
 
@@ -25,6 +25,9 @@ $(EXEC): $(OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cu $(INCS)
+	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
+
+$(OBJ_DIR)/file_parser.o: $(SRC_DIR)/file_parser.cu $(INCS)
 	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
 .PHONY: clean
