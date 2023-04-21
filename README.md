@@ -25,6 +25,7 @@ For example:
 > input/image1.png brightness output/image1_brightness.png
 
 > input/image2.png grayscale output/image2_grayscale.png
+
 > input/image3.png blurring output/image3_blurred.png
 
 
@@ -51,4 +52,4 @@ Contributions to the project are welcome! If you find a bug or have an idea for 
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE]([LICENSE](https://mit-license.org/)) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://mit-license.org/) file for details.
