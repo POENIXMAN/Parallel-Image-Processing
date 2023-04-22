@@ -15,16 +15,18 @@ To build the project, run `make` from the project root directory. This will comp
 
 The project can be run using the following command:
 
-'./image_processing <jobs_file>'
+> ./image_processing <jobs_file>
 
 
 where `<jobs_file>` is the path to the input text file containing the list of jobs to be executed. Each line in the file should specify an input image file name, an algorithm name, and an output image file name, separated by spaces.
 
 For example:
 
-'input/image1.png brightness output/image1_brightness.png
-input/image2.png grayscale output/image2_grayscale.png
-input/image3.png blurring output/image3_blurred.png'
+> input/image1.png brightness output/image1_brightness.png
+
+> input/image2.png grayscale output/image2_grayscale.png
+
+> input/image3.png blurring output/image3_blurred.png
 
 
 The output images will be saved to the `output/` directory.
@@ -50,4 +52,4 @@ Contributions to the project are welcome! If you find a bug or have an idea for 
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://mit-license.org/) file for details.
