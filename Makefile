@@ -1,42 +1,25 @@
 # Compiler options
-CC = nvcc
-CFLAGS = -std=c++11 -O3 -arch=sm_30 -I$(INC_DIR)
+NVCC := nvcc
+NVCCFLAGS := -arch=sm_61
+INCLUDE := -I./include
 
-# Directories
-SRC_DIR = src
-INC_DIR = include
-OBJ_DIR = obj
-BIN_DIR = bin
-IN_DIR = input_files
-OUT_DIR = output_files
+# Source files
+SRCS := $(wildcard src/*.cu)
+OBJS := $(patsubst %.cu,%.o,$(SRCS))
 
-# Files
-EXEC = $(BIN_DIR)/batch_processing
-SRCS = $(wildcard $(SRC_DIR)/*.cu)
-INCS = $(wildcard $(INC_DIR)/*.h)
-OBJS = $(patsubst $(SRC_DIR)/%.cu,$(OBJ_DIR)/%.o,$(SRCS)) $(OBJ_DIR)/file_parser.o
-INPUT_FILES = $(wildcard $(IN_DIR)/*.png)
-OUTPUT_FILES = $(patsubst $(IN_DIR)/%.png,$(OUT_DIR)/%.png,$(INPUT_FILES))
+# Output directories
+OUTDIR := output
+OBJDIR := obj
 
 # Targets
-all: $(EXEC)
+all: $(OBJS)
+    $(NVCC) $(NVCCFLAGS) $(INCLUDE) $(OBJS) -o $(OUTDIR)/batch_launcher
 
-$(EXEC): $(OBJS)
-	$(CC) $(CFLAGS) $^ -o $@
+%.o: %.cu
+    $(NVCC) $(NVCCFLAGS) $(INCLUDE) -c $< -o $(OBJDIR)/$@
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cu $(INCS)
-	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
-
-$(OBJ_DIR)/file_parser.o: $(SRC_DIR)/file_parser.cu $(INCS)
-	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
-
-.PHONY: clean
 clean:
-	rm -f $(EXEC) $(OBJS) $(OUTPUT_FILES)
+    rm -rf $(OUTDIR)/*
+    rm -rf $(OBJDIR)/*
 
-.PHONY: run
-run: $(EXEC)
-	./$(EXEC) input_files/jobs.txt
-
-$(OUTPUT_FILES): $(OUT_DIR)/%.png: $(IN_DIR)/%.png $(EXEC)
-	./$(EXEC) $< $(basename $(notdir $@)).txt $@
+.PHONY: all clean

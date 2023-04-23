@@ -17,6 +17,21 @@ typedef struct Image {
 int load_image(const char *filename, Image *image);
 int save_image(const char *filename, Image *image);
 void free_image(Image *image);
-void grayscale_luminosity(Image *image);
+void grayscale_luminosity(Image *image) {
+    byte *input = image->data;
+    byte *output = (byte *)malloc(image->width * image->height * sizeof(byte));
+    grayscale(input, output, image->width, image->height);
+    free(input);
+    image->data = output;
+    image->channels = 1;
+}
+
+void brightness(Image *image, int value);
+void channel_correction(Image *image);
+void blurring(Image *image);
+void sharpening(Image *image);
+void edge_detection(Image *image);
 
 #endif /* IMAGE_PROCESSING_H */
+
+

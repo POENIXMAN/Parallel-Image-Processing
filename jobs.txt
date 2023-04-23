@@ -1,0 +1,6 @@
+input/input_file_1.png brightness output/output_file_1.png
+input/input_file_2.png grayscale output/output_file_2.png
+input/input_file_3.png channel_correction output/output_file_3.png
+input/input_file_4.png blurring output/output_file_4.png
+input/input_file_5.png sharpening output/output_file_5.png
+input/input_file_6.png edge_detection output/output_file_6.png

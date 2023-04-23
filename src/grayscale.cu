@@ -38,10 +38,11 @@ void grayscale(const byte* inputImage, byte* outputImage, int width, int height)
 
     // Define the thread block and grid sizes
     int blockSize = 256;
-    int numBlocks = (numPixels + blockSize - 1) / blockSize;
+    dim3 gridDim((width + blockSize - 1) / blockSize, (height + blockSize - 1) / blockSize);
+    dim3 blockDim(blockSize, blockSize);
 
     // Launch the kernel
-    grayscaleKernel<<<numBlocks, blockSize>>>(d_inputImage, d_outputImage, numPixels);
+    grayscaleKernel<<<gridDim, blockDim>>>(d_inputImage, d_outputImage, width, height);
 
     // Copy the output image from the device to the host
     cudaMemcpy(outputImage, d_outputImage, numPixels * sizeof(byte), cudaMemcpyDeviceToHost);
@@ -50,5 +51,3 @@ void grayscale(const byte* inputImage, byte* outputImage, int width, int height)
     cudaFree(d_inputImage);
     cudaFree(d_outputImage);
 }
-
-
