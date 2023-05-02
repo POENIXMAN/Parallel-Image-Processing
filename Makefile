@@ -12,14 +12,14 @@ OUTDIR := output
 OBJDIR := obj
 
 # Targets
-all: $(OBJS)
+all: $(OBJS) \
     $(NVCC) $(NVCCFLAGS) $(INCLUDE) $(OBJS) -o $(OUTDIR)/batch_launcher
 
-%.o: %.cu
+%.o: %.cu \
     $(NVCC) $(NVCCFLAGS) $(INCLUDE) -c $< -o $(OBJDIR)/$@
 
-clean:
-    rm -rf $(OUTDIR)/*
-    rm -rf $(OBJDIR)/*
+#clean:
+#    rm -rf $(OUTDIR)/*
+#    rm -rf $(OBJDIR)/*
 
 .PHONY: all clean
