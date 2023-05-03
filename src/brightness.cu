@@ -104,14 +104,20 @@ void process_on_host(PNG_RAW *png_raw)
     long long start = timeInMilliseconds();
     for (int i = 0; i < png_raw->width * png_raw->height; i++)
     {
-        int luminance_value = 0.2126 * png_raw->buf[i * 3] + 0.7152 * png_raw->buf[i * 3 + 1] + 0.0722 * png_raw->buf[i * 3 + 2];
-        png_raw->buf[i * 3] = (png_byte)luminance_value;
-        png_raw->buf[i * 3 + 1] = (png_byte)luminance_value;
-        png_raw->buf[i * 3 + 2] = (png_byte)luminance_value;
+        float r = png_raw->buf[i * 3] / 255.0f;
+        float g = png_raw->buf[i * 3 + 1] / 255.0f;
+        float b = png_raw->buf[i * 3 + 2] / 255.0f;
+        r = fminf(fmaxf(r * 2, 0.0f), 1.0f);
+        g = fminf(fmaxf(g * 2, 0.0f), 1.0f);
+        b = fminf(fmaxf(b * 2, 0.0f), 1.0f);
+        png_raw->buf[i * 3] = static_cast<png_byte>(r * 255.0f);
+        png_raw->buf[i * 3 + 1] = static_cast<png_byte>(g * 255.0f);
+        png_raw->buf[i * 3 + 2] = static_cast<png_byte>(b * 255.0f);
     }
     long long end = timeInMilliseconds();
     printf("timing on host is %lld millis\n", end - start);
 }
+
 
 void process_on_device(PNG_RAW *png_raw)
 {
