@@ -49,7 +49,3 @@ The output images will be saved to the `output/` directory.
 ## Contributing
 
 Contributions to the project are welcome! If you find a bug or have an idea for a new feature, please submit an issue or a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](https://mit-license.org/) file for details.
