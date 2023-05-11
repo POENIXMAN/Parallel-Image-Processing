@@ -80,7 +80,7 @@ void write_png(char *file_name, PNG_RAW *png_raw)
     fclose(fp);
 }
 
-__global__ void SobelKernel(png_byte *d_P, int height, int width)
+__global__ void PictureKernel(png_byte *d_P, int height, int width)
 {
     // Define the Sobel filter kernels
     int Gx[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
@@ -123,6 +123,7 @@ __global__ void SobelKernel(png_byte *d_P, int height, int width)
     d_P[tid * 3 + 1] = gray;
     d_P[tid * 3 + 2] = gray;
 }
+
 
 void process_on_host(PNG_RAW *png_raw)
 {
@@ -200,7 +201,7 @@ void process_on_device(PNG_RAW *png_raw)
     }
     cudaMemcpy(d_P, png_raw->buf, m * n * pixel_size, cudaMemcpyHostToDevice);
 
-    SobelKernel<<<DimGrid, DimBlock>>>(d_P, m, n);
+    PictureKernel<<<DimGrid, DimBlock>>>(d_P, m, n);
 
     cudaMemcpy(png_raw->buf, d_P, m * n * pixel_size, cudaMemcpyDeviceToHost);
 
