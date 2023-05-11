@@ -100,10 +100,10 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
         int B = 0;
         int cnt = 0;
         
-        // Loop over neighboring pixels within a tile
-        for (int dx = -1; dx <= 1; dx++)
+        // Loop over neighboring pixels within a 7x7 window
+        for (int dx = -3; dx <= 3; dx++)
         {
-            for (int dy = -1; dy <= 1; dy++)
+            for (int dy = -3; dy <= 3; dy++)
             {
                 int nx = x + dx;
                 int ny = y + dy;
@@ -129,6 +129,7 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
         }
     }
 }
+
 
 
 void process_on_host(PNG_RAW *png_raw)
