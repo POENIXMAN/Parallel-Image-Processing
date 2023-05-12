@@ -80,7 +80,7 @@ void write_png(char *file_name, PNG_RAW *png_raw)
     fclose(fp);
 }
 
-__global__ void PictureKernel(png_byte *d_P, int height, int width)
+__global__ void PictureKernal(png_byte *d_P, int height, int width, int pixel_size)
 {
     // Define the Sobel filter kernels
     int Gx[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
@@ -107,12 +107,17 @@ __global__ void PictureKernel(png_byte *d_P, int height, int width)
             int x = tid_x + j;
             if (x >= 0 && x < width && y >= 0 && y < height)
             {
-                int index = (y * width + x) * 3;
-                sumx += Gx[i + 1][j + 1] * d_P[index];
-                sumy += Gy[i + 1][j + 1] * d_P[index];
+                int index = (y * width + x) * pixel_size;
+                int r = d_P[index];
+                int g = d_P[index + 1];
+                int b = d_P[index + 2];
+                int luminance_value = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                sumx += Gx[i + 1][j + 1] * luminance_value;
+                sumy += Gy[i + 1][j + 1] * luminance_value;
             }
         }
     }
+
 
     // Calculate the gradient magnitude of the current pixel
     int magnitude = abs(sumx) + abs(sumy);
@@ -122,7 +127,44 @@ __global__ void PictureKernel(png_byte *d_P, int height, int width)
     d_P[tid * 3] = gray;
     d_P[tid * 3 + 1] = gray;
     d_P[tid * 3 + 2] = gray;
+}    
+
+void process_on_device(PNG_RAW *png_raw)
+{
+
+    // assume that the picture is m × n,
+    // m pixels in y dimension and n pixels in x dimension
+    // input d_Pin has been allocated on and copied to device
+    // output d_Pout has been allocated on device
+    int m = png_raw->height;
+    int n = png_raw->width;
+    int pixel_size = png_raw->pixel_size;
+
+    dim3 DimGrid((n - 1) / 16 + 1, (m - 1) / 16 + 1, 1);
+    dim3 DimBlock(16, 16, 1);
+
+    png_byte *d_P;
+    cudaError_t err;
+
+    long long start = timeInMilliseconds();
+
+    err = cudaMalloc((void **)&d_P, m * n * pixel_size * sizeof(png_byte));
+    if (err != cudaSuccess)
+    {
+        printf("%s in %s at line %d\n", cudaGetErrorString(err), __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+    cudaMemcpy(d_P, png_raw->buf, m * n * pixel_size, cudaMemcpyHostToDevice);
+
+    PictureKernal<<<DimGrid, DimBlock>>>(d_P, m, n, pixel_size);
+
+    cudaMemcpy(png_raw->buf, d_P, m * n * pixel_size, cudaMemcpyDeviceToHost);
+
+    long long end = timeInMilliseconds();
+
+    printf("timing on Device is %lld millis\n", end - start);
 }
+
 
 
 void process_on_host(PNG_RAW *png_raw)
@@ -174,41 +216,6 @@ void process_on_host(PNG_RAW *png_raw)
     printf("timing on host is %lld millis\n", end - start);
 }
 
-void process_on_device(PNG_RAW *png_raw)
-{
-
-    // assume that the picture is m × n,
-    // m pixels in y dimension and n pixels in x dimension
-    // input d_Pin has been allocated on and copied to device
-    // output d_Pout has been allocated on device
-    int m = png_raw->height;
-    int n = png_raw->width;
-    int pixel_size = png_raw->pixel_size;
-
-    dim3 DimGrid((n - 1) / 16 + 1, (m - 1) / 16 + 1, 1);
-    dim3 DimBlock(16, 16, 1);
-
-    png_byte *d_P;
-    cudaError_t err;
-
-    long long start = timeInMilliseconds();
-
-    err = cudaMalloc((void **)&d_P, m * n * pixel_size * sizeof(png_byte));
-    if (err != cudaSuccess)
-    {
-        printf("%s in %s at line %d\n", cudaGetErrorString(err), __FILE__, __LINE__);
-        exit(EXIT_FAILURE);
-    }
-    cudaMemcpy(d_P, png_raw->buf, m * n * pixel_size, cudaMemcpyHostToDevice);
-
-    PictureKernel<<<DimGrid, DimBlock>>>(d_P, m, n);
-
-    cudaMemcpy(png_raw->buf, d_P, m * n * pixel_size, cudaMemcpyDeviceToHost);
-
-    long long end = timeInMilliseconds();
-
-    printf("timing on Device is %lld millis\n", end - start);
-}
 
 int main(int argc, char **argv)
 {
