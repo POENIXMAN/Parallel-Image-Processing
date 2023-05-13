@@ -80,7 +80,7 @@ void write_png(char *file_name, PNG_RAW *png_raw)
     fclose(fp);
 }
 
-__global__ void PictureKernal(png_byte *d_P, int height, int width, int pixel_size)
+__global__ void SobelKernel(png_byte *d_P, int height, int width, int pixel_size)
 {
     // Define the Sobel filter kernels
     int Gx[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
@@ -111,23 +111,23 @@ __global__ void PictureKernal(png_byte *d_P, int height, int width, int pixel_si
                 int r = d_P[index];
                 int g = d_P[index + 1];
                 int b = d_P[index + 2];
-                int luminance_value = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                float luminance_value = 0.2126f * r + 0.7152f * g + 0.0722f * b;
                 sumx += Gx[i + 1][j + 1] * luminance_value;
                 sumy += Gy[i + 1][j + 1] * luminance_value;
             }
         }
     }
 
-
     // Calculate the gradient magnitude of the current pixel
-    int magnitude = abs(sumx) + abs(sumy);
+    float gradient_magnitude = sqrtf((float)(sumx * sumx + sumy * sumy));
 
     // Set the color of the pixel based on the gradient magnitude
-    png_byte gray = (png_byte)magnitude;
+    png_byte gray = (png_byte)(gradient_magnitude * 255.0f / sqrtf(2.0f) / 255.0f);
     d_P[tid * 3] = gray;
     d_P[tid * 3 + 1] = gray;
     d_P[tid * 3 + 2] = gray;
-}    
+}
+ 
 
 void process_on_device(PNG_RAW *png_raw)
 {
