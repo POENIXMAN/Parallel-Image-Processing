@@ -183,7 +183,7 @@ void process_on_host(PNG_RAW *png_raw)
         int g = png_raw->buf[i * 3 + 1];
         int b = png_raw->buf[i * 3 + 2];
 
-        int luminance_value = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        int luminance_value = (2126 * r + 7152 * g + 722 * b) / 10000;
         luminance[i] = luminance_value;
     }
 
@@ -199,10 +199,10 @@ void process_on_host(PNG_RAW *png_raw)
             int gy = -luminance[i - width - 1] - 2 * luminance[i - width] - luminance[i - width + 1] +
                      luminance[i + width - 1] + 2 * luminance[i + width] + luminance[i + width + 1];
 
-            int edge_value = sqrt(gx * gx + gy * gy);
+            int edge_value = (int)(sqrt(gx * gx + gy * gy) * 255.0 / (sqrt(2.0) * 255.0) + 0.5);
 
-            // Normalize the edge value to fit in the range [0, 255]
-            edge_value = (int)(255.0 * edge_value / (sqrt(2.0) * 255.0));
+            // Clamp the edge value to the range [0, 255]
+            edge_value = edge_value < 0 ? 0 : (edge_value > 255 ? 255 : edge_value);
 
             png_raw->buf[i * 3] = (png_byte)edge_value;
             png_raw->buf[i * 3 + 1] = (png_byte)edge_value;
@@ -215,6 +215,7 @@ void process_on_host(PNG_RAW *png_raw)
     long long end = timeInMilliseconds();
     printf("timing on host is %lld millis\n", end - start);
 }
+
 
 
 int main(int argc, char **argv)
