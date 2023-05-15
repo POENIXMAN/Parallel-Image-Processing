@@ -156,7 +156,7 @@ void process_on_device(PNG_RAW *png_raw)
     }
     cudaMemcpy(d_P, png_raw->buf, m * n * pixel_size, cudaMemcpyHostToDevice);
 
-    PictureKernal<<<DimGrid, DimBlock>>>(d_P, m, n, pixel_size);
+    SobelKernel<<<DimGrid, DimBlock>>>(d_P, m, n, pixel_size);
 
     cudaMemcpy(png_raw->buf, d_P, m * n * pixel_size, cudaMemcpyDeviceToHost);
 
