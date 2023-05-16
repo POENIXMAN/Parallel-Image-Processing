@@ -83,7 +83,7 @@
      // Calculate the global index of the current thread
      int tid_x = blockIdx.x * blockDim.x + threadIdx.x;
      int tid_y = blockIdx.y * blockDim.y + threadIdx.y;
-     int tid = tid_y * width + tid_x;
+     int tid = tid_y * width + tid_x; // global index
  
      // Check if the thread is within the image boundaries
      if (tid_x >= width || tid_y >= height) {
