@@ -9,6 +9,8 @@ This project implements a batch image processing tool using CUDA C. The tool rea
 
 ## Running
 
+Make the script file executable by running the following command: `chmod + x runner.sh`.
+
 The project can be run using the following command:
 
 > ./runner.sh
