@@ -143,10 +143,16 @@ __global__ void SobelKernel(png_byte *d_P, int height, int width, int pixel_size
     }
 
     // Calculate the gradient magnitude of the current pixel
-    float gradient_magnitude = sqrtf((float)(sumx * sumx + sumy * sumy));
+    //float gradient_magnitude = sqrtf((float)(sumx * sumx + sumy * sumy));
+
+    // Compute the edge value using the Euclidean norm of the gradients
+    float edge_value = (sqrtf(sumx * sumx + sumy * sumy) * 255.0 / (sqrtf(2.0) * 255.0) + 0.5);
+
+    // Clamp the edge value to the range [0, 255]
+    edge_value = edge_value < 0 ? 0 : (edge_value > 255 ? 255 : edge_value);
 
     // Set the color of the pixel based on the gradient magnitude
-    png_byte gray = (png_byte)(gradient_magnitude * 255.0f / sqrtf(2.0f) / 255.0f);
+    png_byte gray = (png_byte)(edge_value * 255.0f / sqrtf(2.0f) / 255.0f);
     d_P[tid * 3] = gray;
     d_P[tid * 3 + 1] = gray;
     d_P[tid * 3 + 2] = gray;
