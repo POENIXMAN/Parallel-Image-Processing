@@ -125,9 +125,9 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
         int B_avg = B_sharp / cnt;
 
         // Calculate the sharp color of the pixel by subtracting the average color from the original color
-        int R_sharp = P[i * 3] + (P[i * 3] - R_avg) * 2;
-        int G_sharp = P[i * 3 + 1] + (P[i * 3 + 1] - G_avg) * 2;
-        int B_sharp = P[i * 3 + 2] + (P[i * 3 + 2] - B_avg) * 2;
+        R_sharp = P[i * 3] + (P[i * 3] - R_avg) * 2;
+        G_sharp = P[i * 3 + 1] + (P[i * 3 + 1] - G_avg) * 2;
+        B_sharp = P[i * 3 + 2] + (P[i * 3 + 2] - B_avg) * 2;
 
         // Set the pixel color to the sharp color, saturating it to avoid overflow
         P[i * 3] = min(max(R_sharp, 0), 255);
