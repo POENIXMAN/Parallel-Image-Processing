@@ -183,5 +183,5 @@ int main(int argc, char **argv)
 
     write_png(argv[2], png_raw);
 
-    printf("Processing finished \n");
+    printf("Processing finished \n ____________________________________________________________________________________________\n");    
 }
