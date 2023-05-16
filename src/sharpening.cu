@@ -97,9 +97,9 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
         int i = y * n + x;
 
         // Calculate the average color of neighboring pixels within a 7x7 window
-        int R_blur = 0;
-        int G_blur = 0;
-        int B_blur = 0;
+        int R_sharp = 0;
+        int G_sharp = 0;
+        int B_sharp = 0;
         int cnt = 0;
 
         for (int dx = -3; dx <= 3; dx++)
@@ -112,17 +112,17 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
                 if (nx >= 0 && nx < n && ny >= 0 && ny < m)
                 {
                     int j = ny * n + nx;
-                    R_blur += P[j * 3];
-                    G_blur += P[j * 3 + 1];
-                    B_blur += P[j * 3 + 2];
+                    R_sharp += P[j * 3];
+                    G_sharp += P[j * 3 + 1];
+                    B_sharp += P[j * 3 + 2];
                     cnt++;
                 }
             }
         }
 
-        int R_avg = R_blur / cnt;
-        int G_avg = G_blur / cnt;
-        int B_avg = B_blur / cnt;
+        int R_avg = R_sharp / cnt;
+        int G_avg = G_sharp / cnt;
+        int B_avg = B_sharp / cnt;
 
         // Calculate the sharp color of the pixel by subtracting the average color from the original color
         int R_sharp = P[i * 3] + (P[i * 3] - R_avg) * 2;
