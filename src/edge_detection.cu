@@ -80,6 +80,19 @@ void write_png(char *file_name, PNG_RAW *png_raw)
     fclose(fp);
 }
 
+
+/**
+ * CUDA kernel for Sobel edge detection operation.
+ *
+ * This kernel computes the gradient magnitude of each pixel in the input image using
+ * the Sobel filter kernels. It updates the pixel values in-place with the grayscale
+ * representation of the gradient magnitude.
+ *
+ * @param d_P         Pointer to the input image data in device memory.
+ * @param height      Height of the input image.
+ * @param width       Width of the input image.
+ * @param pixel_size  Number of bytes per pixel.
+ */
 __global__ void SobelKernel(png_byte *d_P, int height, int width, int pixel_size)
 {
     // Define the Sobel filter kernels
@@ -97,26 +110,39 @@ __global__ void SobelKernel(png_byte *d_P, int height, int width, int pixel_size
         return;
     }
 
-    // Calculate the pixel values in the neighborhood of the current pixel
-    int sumx = 0, sumy = 0;
-    for (int i = -1; i <= 1; i++)
+   // Initialize variables to accumulate gradients in the x and y directions
+int sumx = 0, sumy = 0;
+
+// Iterate over a 3x3 neighborhood of pixels centered around the current thread's position
+for (int i = -1; i <= 1; i++)
+{
+    for (int j = -1; j <= 1; j++)
     {
-        for (int j = -1; j <= 1; j++)
+        // Calculate the coordinates of the pixel in the neighborhood
+        int y = tid_y + i;
+        int x = tid_x + j;
+
+        // Check if the pixel coordinates are within the image boundaries
+        if (x >= 0 && x < width && y >= 0 && y < height)
         {
-            int y = tid_y + i;
-            int x = tid_x + j;
-            if (x >= 0 && x < width && y >= 0 && y < height)
-            {
-                int index = (y * width + x) * pixel_size;
-                int r = d_P[index];
-                int g = d_P[index + 1];
-                int b = d_P[index + 2];
-                float luminance_value = 0.2126f * r + 0.7152f * g + 0.0722f * b;
-                sumx += Gx[i + 1][j + 1] * luminance_value;
-                sumy += Gy[i + 1][j + 1] * luminance_value;
-            }
+            // Compute the index of the pixel in the input image buffer
+            int index = (y * width + x) * pixel_size;
+
+            // Retrieve the red, green, and blue color values of the pixel
+            int r = d_P[index];
+            int g = d_P[index + 1];
+            int b = d_P[index + 2];
+
+            // Calculate the luminance value of the pixel using the RGB values
+            float luminance_value = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+
+            // Accumulate the gradients in the x and y directions
+            sumx += Gx[i + 1][j + 1] * luminance_value;
+            sumy += Gy[i + 1][j + 1] * luminance_value;
         }
     }
+}
+
 
     // Calculate the gradient magnitude of the current pixel
     float gradient_magnitude = sqrtf((float)(sumx * sumx + sumy * sumy));
@@ -127,6 +153,7 @@ __global__ void SobelKernel(png_byte *d_P, int height, int width, int pixel_size
     d_P[tid * 3 + 1] = gray;
     d_P[tid * 3 + 2] = gray;
 }
+
  
 
 void process_on_device(PNG_RAW *png_raw)
@@ -167,9 +194,21 @@ void process_on_device(PNG_RAW *png_raw)
 
 
 
+/**
+ * Perform image processing operations on the host (CPU).
+ *
+ * This function computes the luminance and edge detection values for each pixel
+ * in the given PNG image data structure. It modifies the image data in-place by
+ * updating the RGB values with the computed edge values.
+ *
+ * @param png_raw A pointer to the PNG_RAW structure representing the input image.
+ */
 void process_on_host(PNG_RAW *png_raw)
 {
+    // Start timing
     long long start = timeInMilliseconds();
+
+    // Get the width and height of the image
     int width = png_raw->width;
     int height = png_raw->height;
 
@@ -183,6 +222,7 @@ void process_on_host(PNG_RAW *png_raw)
         int g = png_raw->buf[i * 3 + 1];
         int b = png_raw->buf[i * 3 + 2];
 
+        // Compute the luminance value using the ITU-R BT.709 coefficients
         int luminance_value = (2126 * r + 7152 * g + 722 * b) / 10000;
         luminance[i] = luminance_value;
     }
@@ -194,26 +234,31 @@ void process_on_host(PNG_RAW *png_raw)
         {
             int i = y * width + x;
 
+            // Compute the gradients in the x and y directions using Sobel operator
             int gx = -luminance[i - width - 1] - 2 * luminance[i - 1] - luminance[i + width - 1] +
                      luminance[i - width + 1] + 2 * luminance[i + 1] + luminance[i + width + 1];
             int gy = -luminance[i - width - 1] - 2 * luminance[i - width] - luminance[i - width + 1] +
                      luminance[i + width - 1] + 2 * luminance[i + width] + luminance[i + width + 1];
 
+            // Compute the edge value using the Euclidean norm of the gradients
             int edge_value = (int)(sqrt(gx * gx + gy * gy) * 255.0 / (sqrt(2.0) * 255.0) + 0.5);
 
             // Clamp the edge value to the range [0, 255]
             edge_value = edge_value < 0 ? 0 : (edge_value > 255 ? 255 : edge_value);
 
+            // Update the RGB values with the computed edge value
             png_raw->buf[i * 3] = (png_byte)edge_value;
             png_raw->buf[i * 3 + 1] = (png_byte)edge_value;
             png_raw->buf[i * 3 + 2] = (png_byte)edge_value;
         }
     }
 
+    // Free the temporary luminance buffer
     free(luminance);
 
+    // End timing and print the elapsed time
     long long end = timeInMilliseconds();
-    printf("timing on host is %lld millis\n", end - start);
+    printf("Timing on host: %lld milliseconds\n",end - start);
 }
 
 
