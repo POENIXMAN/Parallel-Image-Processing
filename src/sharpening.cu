@@ -95,13 +95,13 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
     if (x < n && y < m)
     {
         int i = y * n + x;
-        
+
         // Calculate the average color of neighboring pixels within a 7x7 window
         int R_blur = 0;
         int G_blur = 0;
         int B_blur = 0;
         int cnt = 0;
-        
+
         for (int dx = -3; dx <= 3; dx++)
         {
             for (int dy = -3; dy <= 3; dy++)
@@ -119,24 +119,22 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
                 }
             }
         }
-        
+
         int R_avg = R_blur / cnt;
         int G_avg = G_blur / cnt;
         int B_avg = B_blur / cnt;
-        
+
         // Calculate the sharp color of the pixel by subtracting the average color from the original color
         int R_sharp = P[i * 3] + (P[i * 3] - R_avg) * 2;
         int G_sharp = P[i * 3 + 1] + (P[i * 3 + 1] - G_avg) * 2;
         int B_sharp = P[i * 3 + 2] + (P[i * 3 + 2] - B_avg) * 2;
-        
+
         // Set the pixel color to the sharp color, saturating it to avoid overflow
         P[i * 3] = min(max(R_sharp, 0), 255);
         P[i * 3 + 1] = min(max(G_sharp, 0), 255);
         P[i * 3 + 2] = min(max(B_sharp, 0), 255);
     }
 }
-
-
 
 void process_on_device(PNG_RAW *png_raw)
 {
@@ -174,10 +172,9 @@ void process_on_device(PNG_RAW *png_raw)
     printf("timing on Device is %lld millis\n", end - start);
 }
 
-
-
 int main(int argc, char **argv)
 {
+    printf("Starting sharpening process \n");
     PNG_RAW *png_raw = read_png(argv[1]);
     if (png_raw->pixel_size != 3)
     {
@@ -191,5 +188,5 @@ int main(int argc, char **argv)
 
     write_png(argv[2], png_raw);
 
-    printf("Processing finished \n");
+    printf("Processing finished \n ____________________________________________________________________________________________\n");
 }
