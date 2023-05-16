@@ -99,7 +99,7 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
         int G = 0;
         int B = 0;
         int cnt = 0;
-        
+
         // Loop over neighboring pixels within a 7x7 window
         for (int dx = -3; dx <= 3; dx++)
         {
@@ -119,7 +119,7 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
                 }
             }
         }
-        
+
         // Set the pixel color to the average of the neighboring pixels
         if (cnt > 0)
         {
@@ -130,19 +130,16 @@ __global__ void PictureKernel(png_byte *P, int m, int n)
     }
 }
 
-
-
 void process_on_host(PNG_RAW *png_raw)
 {
     long long start = timeInMilliseconds();
-    int kernel_size = 5;  // change this to adjust the blur strength
+    int kernel_size = 5; // change this to adjust the blur strength
     float kernel[kernel_size][kernel_size] = {
         {0.04, 0.04, 0.04, 0.04, 0.04},
         {0.04, 0.04, 0.04, 0.04, 0.04},
         {0.04, 0.04, 0.04, 0.04, 0.04},
         {0.04, 0.04, 0.04, 0.04, 0.04},
-        {0.04, 0.04, 0.04, 0.04, 0.04}
-    };  // change this to adjust the blur kernel
+        {0.04, 0.04, 0.04, 0.04, 0.04}}; // change this to adjust the blur kernel
     int half_kernel_size = kernel_size / 2;
     for (int i = half_kernel_size; i < png_raw->height - half_kernel_size; i++)
     {
@@ -169,7 +166,6 @@ void process_on_host(PNG_RAW *png_raw)
     long long end = timeInMilliseconds();
     printf("timing on host is %lld millis\n", end - start);
 }
-
 
 void process_on_device(PNG_RAW *png_raw)
 {
@@ -207,10 +203,9 @@ void process_on_device(PNG_RAW *png_raw)
     printf("timing on Device is %lld millis\n", end - start);
 }
 
-
-
 int main(int argc, char **argv)
 {
+    printf("Starting blurring process \n");
     int on_host = 2;
 
     if (argv[3] != NULL && strcmp(argv[3], "-d") == 0)
@@ -232,5 +227,5 @@ int main(int argc, char **argv)
 
     write_png(argv[2], png_raw);
 
-    printf("Processing finished \n");
+    printf("Processing finished \n ____________________________________________________________________________________________\n");
 }

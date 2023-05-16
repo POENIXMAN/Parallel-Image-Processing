@@ -80,7 +80,6 @@ void write_png(char *file_name, PNG_RAW *png_raw)
     fclose(fp);
 }
 
-
 /**
  * CUDA kernel for Sobel edge detection operation.
  *
@@ -110,39 +109,38 @@ __global__ void SobelKernel(png_byte *d_P, int height, int width, int pixel_size
         return;
     }
 
-   // Initialize variables to accumulate gradients in the x and y directions
-int sumx = 0, sumy = 0;
+    // Initialize variables to accumulate gradients in the x and y directions
+    int sumx = 0, sumy = 0;
 
-// Iterate over a 3x3 neighborhood of pixels centered around the current thread's position
-for (int i = -1; i <= 1; i++)
-{
-    for (int j = -1; j <= 1; j++)
+    // Iterate over a 3x3 neighborhood of pixels centered around the current thread's position
+    for (int i = -1; i <= 1; i++)
     {
-        // Calculate the coordinates of the pixel in the neighborhood
-        int y = tid_y + i;
-        int x = tid_x + j;
-
-        // Check if the pixel coordinates are within the image boundaries
-        if (x >= 0 && x < width && y >= 0 && y < height)
+        for (int j = -1; j <= 1; j++)
         {
-            // Compute the index of the pixel in the input image buffer
-            int index = (y * width + x) * pixel_size;
+            // Calculate the coordinates of the pixel in the neighborhood
+            int y = tid_y + i;
+            int x = tid_x + j;
 
-            // Retrieve the red, green, and blue color values of the pixel
-            int r = d_P[index];
-            int g = d_P[index + 1];
-            int b = d_P[index + 2];
+            // Check if the pixel coordinates are within the image boundaries
+            if (x >= 0 && x < width && y >= 0 && y < height)
+            {
+                // Compute the index of the pixel in the input image buffer
+                int index = (y * width + x) * pixel_size;
 
-            // Calculate the luminance value of the pixel using the RGB values
-            float luminance_value = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+                // Retrieve the red, green, and blue color values of the pixel
+                int r = d_P[index];
+                int g = d_P[index + 1];
+                int b = d_P[index + 2];
 
-            // Accumulate the gradients in the x and y directions
-            sumx += Gx[i + 1][j + 1] * luminance_value;
-            sumy += Gy[i + 1][j + 1] * luminance_value;
+                // Calculate the luminance value of the pixel using the RGB values
+                float luminance_value = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+
+                // Accumulate the gradients in the x and y directions
+                sumx += Gx[i + 1][j + 1] * luminance_value;
+                sumy += Gy[i + 1][j + 1] * luminance_value;
+            }
         }
     }
-}
-
 
     // Calculate the gradient magnitude of the current pixel
     float gradient_magnitude = sqrtf((float)(sumx * sumx + sumy * sumy));
@@ -153,8 +151,6 @@ for (int i = -1; i <= 1; i++)
     d_P[tid * 3 + 1] = gray;
     d_P[tid * 3 + 2] = gray;
 }
-
- 
 
 void process_on_device(PNG_RAW *png_raw)
 {
@@ -191,8 +187,6 @@ void process_on_device(PNG_RAW *png_raw)
 
     printf("timing on Device is %lld millis\n", end - start);
 }
-
-
 
 /**
  * Perform image processing operations on the host (CPU).
@@ -258,13 +252,12 @@ void process_on_host(PNG_RAW *png_raw)
 
     // End timing and print the elapsed time
     long long end = timeInMilliseconds();
-    printf("Timing on host: %lld milliseconds\n",end - start);
+    printf("Timing on host: %lld milliseconds\n", end - start);
 }
-
-
 
 int main(int argc, char **argv)
 {
+    printf("Starting edge detection process \n");
     int on_host = 2;
 
     if (argv[3] != NULL && strcmp(argv[3], "-d") == 0)
@@ -286,5 +279,5 @@ int main(int argc, char **argv)
 
     write_png(argv[2], png_raw);
 
-    printf("Processing finished \n");
+    printf("Processing finished \n ____________________________________________________________________________________________\n");
 }

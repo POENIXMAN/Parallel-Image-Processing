@@ -25,15 +25,16 @@ mv correction .
 # List of input files
 input_files=(
    "img/hawk.png"
+   "img/image_big_3ch.png"
 )
 
 # Loop through the input files and execute each compiled C file with the required arguments
 for i in "${input_files[@]}"
 do
-    ./blur "$i" "output/output-${i#*/}"
-    ./edge "$i" "output/output-${i#*/}"
-    ./sharp "$i" "output/output-${i#*/}"
-    ./gray "$i" "output/output-${i#*/}"
-    ./bright "$i" "output/output-${i#*/}"
-    ./correction "$i" "output/output-${i#*/}"
+    ./blur "$i" "output/blur-${i#*/}"
+    ./edge "$i" "output/edge-${i#*/}"
+    ./sharp "$i" "output/sharp-${i#*/}"
+    ./gray "$i" "output/gray-${i#*/}"
+    ./bright "$i" "output/bright-${i#*/}"
+    ./correction "$i" "output/correction-${i#*/}"
 done 

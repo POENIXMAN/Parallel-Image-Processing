@@ -79,13 +79,15 @@ void write_png(char *file_name, PNG_RAW *png_raw)
     fclose(fp);
 }
 
-__global__ void PictureKernel(png_byte *d_P, int height, int width) {
+__global__ void PictureKernel(png_byte *d_P, int height, int width)
+{
     // Calculate the row # of the d_P element
     int Row = blockIdx.y * blockDim.y + threadIdx.y;
     // Calculate the column # of the d_P element
     int Col = blockIdx.x * blockDim.x + threadIdx.x;
     // each thread computes one element of d_P if in range
-    if ((Row < height) && (Col < width)) {
+    if ((Row < height) && (Col < width))
+    {
         float r = d_P[(Row * width + Col) * 3 + 0] / 255.0f;
         float g = d_P[(Row * width + Col) * 3 + 1] / 255.0f;
         float b = d_P[(Row * width + Col) * 3 + 2] / 255.0f;
@@ -97,7 +99,6 @@ __global__ void PictureKernel(png_byte *d_P, int height, int width) {
         d_P[(Row * width + Col) * 3 + 2] = static_cast<png_byte>(b * 255.0f);
     }
 }
-
 
 void process_on_host(PNG_RAW *png_raw)
 {
@@ -117,7 +118,6 @@ void process_on_host(PNG_RAW *png_raw)
     long long end = timeInMilliseconds();
     printf("timing on host is %lld millis\n", end - start);
 }
-
 
 void process_on_device(PNG_RAW *png_raw)
 {
@@ -157,6 +157,7 @@ void process_on_device(PNG_RAW *png_raw)
 
 int main(int argc, char **argv)
 {
+    printf("Starting brightness process \n");
     int on_host = 2;
 
     if (argv[3] != NULL && strcmp(argv[3], "-d") == 0)
@@ -178,5 +179,5 @@ int main(int argc, char **argv)
 
     write_png(argv[2], png_raw);
 
-    printf("Processing finished \n");
+    printf("Processing finished \n ____________________________________________________________________________________________\n");
 }
